@@ -1,0 +1,119 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../polymer-detect-js/detect-js.html">
+<!--
+`paperfire-device`
+An element to sync device info to firebase
+
+@demo demo/index.html
+-->
+
+<dom-module id="paperfire-device">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+    </style>
+    <detect-js device="{{deviceObject}}" os="{{osObject}}" browser="{{browserObject}}"></detect-js>
+    <template is="dom-if" if="{{debug}}">
+      <pre>device [[deviceObject.type]]</pre>
+      <pre>browser [[browserObject.family]]</pre>
+      <pre>os [[osObject.family]]</pre>
+      <pre>
+        landscape [[landscape]]
+      </pre>
+      <pre>
+        portrait [[portrait]]
+      </pre>
+    </template>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'paperfire-device',
+
+      properties: {
+        //browser: Chrome, Chrome Mobile, Safari, Mobile Safari
+        browser: {
+          type: String,
+          notify: true,
+          reflectToAttribute: true
+        },
+        // Debug shows the values
+        debug: Boolean,
+        // true if window.innerWidth is greater than window.innerHeight
+        landscape: {
+          type: Boolean,
+          notify: true,
+          reflectToAttribute: true
+        },
+        // OS: Android, Mac OS, iOS
+        os: {
+          type: String,
+          notify: true,
+          reflectToAttribute: true
+        },
+        // true if window.innerHeight is greater than window.innerWidth
+        portrait: {
+          type: Boolean,
+          notify: true,
+          reflectToAttribute: true
+        },
+        // device type: Mobile, Tablet, Desktop
+        type: {
+          type: String,
+          notify: true,
+          reflectToAttribute: true
+        }
+      },
+
+      ready: function () {
+        var vm = this;
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        if (h === 0) {
+          setTimeout(function () {
+            h = window.innerHeight;
+
+            console.log(w, h, 'timeout');
+            vm._calcWindow(w, h);
+          }, 20);
+        } else {
+          this._calcWindow(w, h);
+        }
+        console.log(this.deviceObject);
+        console.log(w, h);
+        this.type = this.deviceObject.type;
+        this.os = this.osObject.family;
+        this.browser = this.browserObject.family;
+        window.addEventListener("resize", function () {
+          w = window.innerWidth;
+          h = window.innerHeight;
+          vm._calcWindow(w, h);
+        });
+      },
+
+      _calcWindow: function (width, height) {
+        var vm = this;
+        this.debounce('resize', function () {
+          if (width < height) {
+            vm.landscape = false;
+            vm.portrait = true;
+          } else {
+            vm.landscape = true;
+            vm.portrait = false;
+          }
+
+          this.type = this.deviceObject.type;
+          this.os = this.osObject.family;
+          this.browser = this.browserObject.family;
+        }, 320);
+
+      }
+    });
+  </script>
+</dom-module>
+
+</dom-module>
